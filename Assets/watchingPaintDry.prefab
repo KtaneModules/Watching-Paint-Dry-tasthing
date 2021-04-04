@@ -419,7 +419,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ModuleType: watchingPaintDry
   ModuleDisplayName: Watching Paint Dry
-  RequiresTimerVisibility: 0
+  RequiresTimerVisibility: 1
 --- !u!114 &114362555509535318
 MonoBehaviour:
   m_ObjectHideFlags: 1

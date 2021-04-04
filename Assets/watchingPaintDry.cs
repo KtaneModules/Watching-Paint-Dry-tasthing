@@ -90,6 +90,8 @@ public class watchingPaintDry : MonoBehaviour
         Debug.LogFormat("[Watching Paint Dry #{0}] Stopped watching at: {1}", moduleId, bomb.GetFormattedTime());
         endTime = (int)bomb.GetTime();
         var submittedTime = startTime - endTime;
+        if (submittedTime < 0)
+            submittedTime *= -1;
         Debug.LogFormat("[Watching Paint Dry #{0}] Elapsed time in seconds: {1}", moduleId, submittedTime);
         if (submittedTime == 0)
         {
@@ -101,13 +103,13 @@ public class watchingPaintDry : MonoBehaviour
             module.HandlePass();
             moduleSolved = true;
             Debug.LogFormat("[Watching Paint Dry #{0}] You watched the paint dry for the correct amount of time. Module solved!", moduleId);
-            submitted = false;
+            StartCoroutine(WaitToToggle());
         }
         else
         {
             module.HandleStrike();
             Debug.LogFormat("[Watching Paint Dry #{0}] The paint is not happy with the amount of time for which it was watched. Strike!", moduleId);
-            submitted = false;
+            StartCoroutine(WaitToToggle());
         }
     }
 
@@ -118,6 +120,12 @@ public class watchingPaintDry : MonoBehaviour
             yield return new WaitForSeconds(rnd.Range(.75f, 1.75f));
             audio.PlaySoundAtTransform("stroke" + rnd.Range(1, 5), transform);
         }
+        submitted = false;
+    }
+
+    private IEnumerator WaitToToggle()
+    {
+        yield return new WaitForSeconds(1.5f);
         submitted = false;
     }
 

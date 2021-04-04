@@ -14,7 +14,10 @@ MonoBehaviour:
   id: watchingPaintDry
   title: Watching Paint Dry
   author: TasThing
-  description: 
+  description: "It\u2019d be hard for someone who finds this module incredibly boring
+    to describe how they feel.\r\n\r\nModule idea by IambicDiameter, implementation
+    by TasThing.\r\n\r\nManual HTML: https://ktane.timwi.de/HTML/Watching%20Paint%20Dry.html\r\nManual
+    PDF: https://ktane.timwi.de/PDF/Watching%20Paint%20Dry.pdf"
   version: 
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: 7cb18daddd6dd3d42b25a4c8aed47b39, type: 3}
