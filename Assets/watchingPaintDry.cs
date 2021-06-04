@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +48,7 @@ public class watchingPaintDry : MonoBehaviour
         stroke.material.mainTexture = strokeTextures[color];
         Debug.LogFormat("[Watching Paint Dry #{0}] Number of strokes: {1}", moduleId, strokeCount);
         Debug.LogFormat("[Watching Paint Dry #{0}] Color of strokes: {1}", moduleId, colorNames[color]);
-        Debug.LogFormat("[Watching Paint Dry #{0}] Stroke angle range: {1}° to {2}°", moduleId, 90 * rotationRange, 90 + 90 * rotationRange);
+        Debug.LogFormat("[Watching Paint Dry #{0}] Stroke angle range: {1}Â° to {2}Â°", moduleId, 90 * rotationRange, 90 + 90 * rotationRange);
         var angle = 0f;
         switch (rotationRange)
         {
