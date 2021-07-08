@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +13,11 @@ public class watchingPaintDry : MonoBehaviour
     public KMBombInfo bomb;
     public KMBombModule module;
     public KMSelectable mainSelectable;
+    public KMColorblindMode Colorblind;
 
     public Renderer stroke;
     public Texture[] strokeTextures;
+    public TextMesh cbText;
 
     private int color;
     private int strokeCount;
@@ -28,16 +30,32 @@ public class watchingPaintDry : MonoBehaviour
     private static readonly string[] colorNames = new string[] { "white", "red", "blue", "yellow", "black" };
     private static readonly string[] table1 = new string[] { "G", "E", "A", "C", "H", "G", "C", "F", "H", "B", "B", "E", "G", "D", "F", "D", "G", "H", "C", "A", "E", "C", "G", "A", "H", "D", "H", "D", "C", "F" };
     private static readonly int[] table2 = new int[] { 16, 25, 4, 32, 33, 29, 21, 6, 13, 24, 15, 11, 5, 10, 26, 17, 9, 12, 14, 23, 27, 7, 30, 31, 34, 3, 20, 28, 22, 8, 18, 19 };
+    private static Color[] cbColors = new Color[] { Color.white, Color.red, new Color(0, 0.075f, 0.5f), new Color(1, 0.85f, 0), Color.black };
 
     private static int moduleIdCounter = 1;
     private int moduleId;
     private bool moduleSolved;
+    private bool TwitchPlaysActive;
+    private bool cbON;
 
+    private Action start, end;
     private void Awake()
     {
         moduleId = moduleIdCounter++;
-        mainSelectable.OnFocus += delegate () { StartSelection(); };
-        mainSelectable.OnDefocus += delegate () { EndSelection(); };
+        start = delegate () { StartSelection(); };
+        end = delegate () { EndSelection(); };
+        mainSelectable.OnFocus += start;
+        mainSelectable.OnDefocus += end;
+        module.OnActivate += delegate ()
+        {
+            if (TwitchPlaysActive)
+            {
+                mainSelectable.OnFocus -= start;
+                mainSelectable.OnDefocus -= end;
+            }
+            if (Colorblind.ColorblindModeActive)
+                ToggleCB();
+        };
     }
 
     private void Start()
@@ -46,9 +64,11 @@ public class watchingPaintDry : MonoBehaviour
         strokeCount = rnd.Range(3, 9);
         rotationRange = rnd.Range(0, 4);
         stroke.material.mainTexture = strokeTextures[color];
+        cbText.text = colorNames[color];
+        cbText.color = cbColors[color];
         Debug.LogFormat("[Watching Paint Dry #{0}] Number of strokes: {1}", moduleId, strokeCount);
         Debug.LogFormat("[Watching Paint Dry #{0}] Color of strokes: {1}", moduleId, colorNames[color]);
-        Debug.LogFormat("[Watching Paint Dry #{0}] Stroke angle range: {1}° to {2}°", moduleId, 90 * rotationRange, 90 + 90 * rotationRange);
+        Debug.LogFormat("[Watching Paint Dry #{0}] Stroke angle range: {1}Â° to {2}Â°", moduleId, 90 * rotationRange, 90 + 90 * rotationRange);
         var angle = 0f;
         switch (rotationRange)
         {
@@ -65,7 +85,7 @@ public class watchingPaintDry : MonoBehaviour
                 angle = rnd.Range(275f, 350f);
                 break;
             default:
-                throw new Exception("rotationRange has an invalid value (expected 0-3).");
+                throw new ArgumentOutOfRangeException("rotationRange has an invalid value (expected 0-3).");
         }
         stroke.transform.localEulerAngles = new Vector3(90f, angle, 0f);
         var letter = table1[(strokeCount - 3) * 5 + color];
@@ -89,9 +109,7 @@ public class watchingPaintDry : MonoBehaviour
         submitted = true; // For some reason, OnDefocus gets called twice, this bool accounts for that
         Debug.LogFormat("[Watching Paint Dry #{0}] Stopped watching at: {1}", moduleId, bomb.GetFormattedTime());
         endTime = (int)bomb.GetTime();
-        var submittedTime = startTime - endTime;
-        if (submittedTime < 0)
-            submittedTime *= -1;
+        var submittedTime = Math.Abs(startTime - endTime);
         Debug.LogFormat("[Watching Paint Dry #{0}] Elapsed time in seconds: {1}", moduleId, submittedTime);
         if (submittedTime == 0)
         {
@@ -112,6 +130,11 @@ public class watchingPaintDry : MonoBehaviour
             StartCoroutine(WaitToToggle());
         }
     }
+    private void ToggleCB()
+    {
+        cbON = !cbON;
+        cbText.gameObject.SetActive(cbON);
+    }
 
     private IEnumerator PaintStrokes()
     {
@@ -129,20 +152,37 @@ public class watchingPaintDry : MonoBehaviour
         submitted = false;
     }
 
-    /*
     // Twitch Plays
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = "!{0} ";
+    private readonly string TwitchHelpMessage = "Use <!{0} inspect> to play the brush noises. Use <!{0} watch for 23> to watch the paint dry for 23 seconds. Use <!{0} colorblind> to toggle colorblind mode.";
 #pragma warning restore 414
 
-    private IEnumerator ProcessTwitchCommand(string input)
+    private IEnumerator ProcessTwitchCommand(string command)
     {
-        yield return null;
+        command = command.Trim().ToUpperInvariant();
+        if (command == "INSPECT")
+        {
+            yield return null;
+            StartSelection();
+            EndSelection();
+        }
+        else if (new string[] { "COLORBLIND", "COLOURBLIND", "COLOR-BLIND", "COLOUR-BLIND", "CB" }.Contains(command))
+        {
+            yield return null;
+            ToggleCB();
+            yield break;
+        }
+        Match m = Regex.Match(command, @"^WATCH\s+(?:FOR\s+)?([1-3]?[0-9])$");
+        if (m.Success)
+        {
+            yield return null;
+            int startTime = (int)bomb.GetTime();
+            int submit = int.Parse(m.Groups[1].Value);
+            Debug.Log(submit);
+            StartSelection();
+            while (Math.Abs((int)bomb.GetTime() - startTime) != submit)
+                yield return null;
+            EndSelection();
+        }
     }
-
-    private IEnumerator TwitchHandleForcedSolve()
-    {
-        yield return null;
-    }
-    */
 }
