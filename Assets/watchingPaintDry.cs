@@ -185,4 +185,11 @@ public class watchingPaintDry : MonoBehaviour
             EndSelection();
         }
     }
+
+    private IEnumerator TwitchHandleForcedSolve()
+    {
+        while (submitted)
+            yield return true;
+        yield return ProcessTwitchCommand(string.Format("wait for {0}", solution));
+    }
 }
