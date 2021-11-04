@@ -111,7 +111,7 @@ public class watchingPaintDry : MonoBehaviour
         endTime = (int)bomb.GetTime();
         var submittedTime = Math.Abs(startTime - endTime);
         Debug.LogFormat("[Watching Paint Dry #{0}] Elapsed time in seconds: {1}", moduleId, submittedTime);
-        if (submittedTime == 0)
+        if (submittedTime == 0 || submittedTime == 1 || submittedTime == 2)
         {
             Debug.LogFormat("[Watching Paint Dry #{0}] Initiating paint strokes.", moduleId);
             StartCoroutine(PaintStrokes());
